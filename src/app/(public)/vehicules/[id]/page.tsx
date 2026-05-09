@@ -1,6 +1,8 @@
 import { getVehicleById } from "@/lib/server/vehicle-data";
 import { notFound } from "next/navigation";
 import { VehicleDetail } from "@/components/public/vehicle-detail";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -16,6 +18,18 @@ export default async function VehiculePage({ params }: { params: Promise<{ id: s
   const { id } = await params;
   const vehicle = await getVehicleById(id);
   if (!vehicle) notFound();
+
+  const session = await auth();
+  let isFavorite = false;
+  if (session?.user?.id) {
+    const fav = await prisma.favorite.findUnique({
+      where: {
+        userId_vehicleId: { userId: session.user.id, vehicleId: id },
+      },
+      select: { id: true },
+    });
+    isFavorite = !!fav;
+  }
 
   const serialized = {
     ...vehicle,
@@ -33,5 +47,5 @@ export default async function VehiculePage({ params }: { params: Promise<{ id: s
     })),
   };
 
-  return <VehicleDetail vehicle={serialized} />;
+  return <VehicleDetail vehicle={serialized} initialFavorite={isFavorite} />;
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   CATEGORY_LABELS,
@@ -11,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
+import { ReviewForm } from "@/components/public/review-form";
+import { toggleFavorite } from "@/app/actions/favorites";
 import {
   Users,
   Settings,
@@ -56,18 +60,33 @@ interface VehicleData {
   images: string[];
   isFeatured: boolean;
   reviews: Review[];
+  isInitiallyFavorite?: boolean;
 }
 
 type Tab = "description" | "equipments" | "reviews";
 
-export function VehicleDetail({ vehicle }: { vehicle: VehicleData }) {
+export function VehicleDetail({
+  vehicle,
+  initialFavorite = false,
+}: {
+  vehicle: VehicleData;
+  initialFavorite?: boolean;
+}) {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState<Tab>("description");
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(initialFavorite);
+  const [isPending, startTransition] = useTransition();
+  const [reviews, setReviews] = useState(vehicle.reviews);
+
+  useEffect(() => {
+    setIsFavorite(initialFavorite);
+  }, [initialFavorite]);
 
   const averageRating =
-    vehicle.reviews.length > 0
-      ? vehicle.reviews.reduce((sum, r) => sum + r.rating, 0) / vehicle.reviews.length
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 0;
 
   const specs = [
@@ -75,15 +94,41 @@ export function VehicleDetail({ vehicle }: { vehicle: VehicleData }) {
     ...(vehicle.torque ? [{ icon: Zap, label: "Couple", value: `${vehicle.torque} Nm` }] : []),
     ...(vehicle.acceleration ? [{ icon: Timer, label: "0-100 km/h", value: `${vehicle.acceleration}s` }] : []),
     ...(vehicle.topSpeed ? [{ icon: Activity, label: "Vitesse max", value: `${vehicle.topSpeed} km/h` }] : []),
-    ...(vehicle.consumption ? [{ icon: vehicle.fuel === "ELECTRIC" ? Battery : Fuel, label: vehicle.fuel === "ELECTRIC" ? "Conso." : "Conso.", value: vehicle.fuel === "ELECTRIC" ? `${vehicle.consumption} kWh` : `${vehicle.consumption} L` }] : []),
+    ...(vehicle.consumption ? [{ icon: vehicle.fuel === "ELECTRIC" ? Battery : Fuel, label: "Conso.", value: vehicle.fuel === "ELECTRIC" ? `${vehicle.consumption} kWh` : `${vehicle.consumption} L` }] : []),
     ...(vehicle.trunkVolume ? [{ icon: Package, label: "Coffre", value: `${vehicle.trunkVolume} L` }] : []),
   ];
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "description", label: "Description" },
     { key: "equipments", label: `Équipements (${vehicle.equipments.length})` },
-    { key: "reviews", label: `Avis (${vehicle.reviews.length})` },
+    { key: "reviews", label: `Avis (${reviews.length})` },
   ];
+
+  const handleFavorite = () => {
+    if (!session?.user?.id) {
+      router.push(`/auth/connexion?callbackUrl=${encodeURIComponent(`/vehicules/${vehicle.id}`)}`);
+      return;
+    }
+    startTransition(async () => {
+      const result = await toggleFavorite(vehicle.id);
+      if ("isFavorite" in result && typeof result.isFavorite === "boolean") {
+        setIsFavorite(result.isFavorite);
+      }
+    });
+  };
+
+  const handleReviewAdded = (review: Review) => {
+    setReviews((prev) => [review, ...prev]);
+    setActiveTab("reviews");
+  };
+
+  const handleReserve = () => {
+    if (!session?.user?.id) {
+      router.push(`/auth/connexion?callbackUrl=${encodeURIComponent(`/reservations/nouvelle?vehicleId=${vehicle.id}`)}`);
+      return;
+    }
+    router.push(`/reservations/nouvelle?vehicleId=${vehicle.id}`);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-margin py-xl">
@@ -106,7 +151,8 @@ export function VehicleDetail({ vehicle }: { vehicle: VehicleData }) {
               src={vehicle.images[selectedImage] || "/placeholder-car.jpg"}
             />
             <button
-              onClick={() => setIsFavorite(!isFavorite)}
+              onClick={handleFavorite}
+              disabled={isPending}
               className="absolute top-md right-md p-sm rounded-full bg-surface/90 backdrop-blur shadow-sm hover:bg-surface transition-colors"
               aria-label="Ajouter aux favoris"
             >
@@ -200,11 +246,11 @@ export function VehicleDetail({ vehicle }: { vehicle: VehicleData }) {
               <span>{vehicle.mileageLimit} km inclus</span>
               <span>Assurance de base incluse</span>
             </div>
-            <Link href={`/reservations/nouvelle?vehicleId=${vehicle.id}`} className="block mt-md">
+            <button onClick={handleReserve} className="block mt-md w-full">
               <Button size="lg" className="w-full gap-sm">
                 Réserver ce véhicule
               </Button>
-            </Link>
+            </button>
           </div>
         </div>
       </div>
@@ -258,7 +304,22 @@ export function VehicleDetail({ vehicle }: { vehicle: VehicleData }) {
 
           {activeTab === "reviews" && (
             <div className="max-w-3xl flex flex-col gap-md">
-              {vehicle.reviews.length > 0 ? (
+              {session?.user?.id && (
+                <ReviewForm vehicleId={vehicle.id} onReviewAdded={handleReviewAdded} />
+              )}
+              {!session?.user?.id && (
+                <div className="text-center py-md">
+                  <Link
+                    href={`/auth/connexion?callbackUrl=${encodeURIComponent(`/vehicules/${vehicle.id}`)}`}
+                    className="text-primary hover:underline font-label-bold"
+                  >
+                    Connectez-vous
+                  </Link>
+                  {" "}pour laisser un avis
+                </div>
+              )}
+
+              {reviews.length > 0 ? (
                 <>
                   <div className="flex items-center gap-md p-md bg-surface-container-lowest rounded-xl border border-outline-variant/20">
                     <div className="text-center">
@@ -268,11 +329,11 @@ export function VehicleDetail({ vehicle }: { vehicle: VehicleData }) {
                     <div>
                       <StarRating rating={averageRating} size={20} />
                       <span className="font-label-sm text-label-sm text-on-surface-variant mt-xs block">
-                        {vehicle.reviews.length} avis
+                        {reviews.length} avis
                       </span>
                     </div>
                   </div>
-                  {vehicle.reviews.map((review) => (
+                  {reviews.map((review) => (
                     <div key={review.id} className="p-md bg-surface rounded-xl border border-outline-variant/20 flex flex-col gap-sm">
                       <div className="flex items-center justify-between">
                         <span className="font-label-bold text-label-bold text-on-surface">
