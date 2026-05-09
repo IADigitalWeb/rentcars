@@ -88,7 +88,7 @@ function InscriptionForm() {
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-margin py-xl">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-[600px]">
         <div className="text-center mb-lg">
           <h1 className="font-headline-xl text-headline-xl text-on-surface">Créer un compte</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-sm">
