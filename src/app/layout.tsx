@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Work_Sans } from "next/font/google";
+import { AuthProvider } from "@/components/public/auth-provider";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -29,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${manrope.variable} ${workSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-on-background">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
