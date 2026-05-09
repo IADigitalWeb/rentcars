@@ -50,18 +50,18 @@ export function VehicleCard({
             <span className="font-label-sm text-label-sm text-on-surface-variant">/jour</span>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-sm py-sm border-t border-b border-outline-variant/20 mt-auto">
-          <div className="flex flex-col items-center gap-xs">
-            <Users size={20} className="text-on-surface-variant" />
-            <span className="font-label-sm text-label-sm text-on-surface">{seats} Places</span>
+        <div className="flex items-center justify-between gap-xs py-sm border-t border-b border-outline-variant/20 mt-auto">
+          <div className="flex items-center gap-xs min-w-0">
+            <Users size={16} className="text-on-surface-variant shrink-0" />
+            <span className="font-label-sm text-label-sm text-on-surface truncate">{seats} pl.</span>
           </div>
-          <div className="flex flex-col items-center gap-xs border-l border-r border-outline-variant/20">
-            <Settings size={20} className="text-on-surface-variant" />
-            <span className="font-label-sm text-label-sm text-on-surface">{TRANSMISSION_LABELS[transmission] || transmission}</span>
+          <div className="flex items-center gap-xs min-w-0 border-l border-r border-outline-variant/20 px-sm">
+            <Settings size={16} className="text-on-surface-variant shrink-0" />
+            <span className="font-label-sm text-label-sm text-on-surface truncate">{TRANSMISSION_LABELS[transmission] || transmission}</span>
           </div>
-          <div className="flex flex-col items-center gap-xs">
-            <Fuel size={20} className="text-on-surface-variant" />
-            <span className="font-label-sm text-label-sm text-on-surface">{FUEL_LABELS[fuel] || fuel}</span>
+          <div className="flex items-center gap-xs min-w-0">
+            <Fuel size={16} className="text-on-surface-variant shrink-0" />
+            <span className="font-label-sm text-label-sm text-on-surface truncate">{FUEL_LABELS[fuel] || fuel}</span>
           </div>
         </div>
         <Link

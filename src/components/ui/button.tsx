@@ -12,7 +12,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles = {
   primary:
-    "bg-inverse-surface text-inverse-on-surface hover:bg-primary hover:text-on-primary",
+    "bg-primary text-on-primary hover:bg-primary/90",
   ghost:
     "border border-secondary text-secondary hover:bg-secondary/5",
   danger:

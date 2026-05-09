@@ -246,11 +246,9 @@ export function VehicleDetail({
               <span>{vehicle.mileageLimit} km inclus</span>
               <span>Assurance de base incluse</span>
             </div>
-            <button onClick={handleReserve} className="block mt-md w-full">
-              <Button size="lg" className="w-full gap-sm">
-                Réserver ce véhicule
-              </Button>
-            </button>
+            <Button size="lg" className="w-full gap-sm mt-md" onClick={handleReserve}>
+              Réserver ce véhicule
+            </Button>
           </div>
         </div>
       </div>

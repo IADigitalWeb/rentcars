@@ -11,7 +11,7 @@ describe("Button", () => {
   it("applies primary variant classes by default", () => {
     render(<Button>Primary</Button>);
     const btn = screen.getByText("Primary");
-    expect(btn.className).toContain("bg-inverse-surface");
+    expect(btn.className).toContain("bg-primary");
   });
 
   it("applies ghost variant classes", () => {
