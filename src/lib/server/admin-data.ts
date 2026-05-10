@@ -18,10 +18,10 @@ export async function getAdminKPIs() {
     reservationsThisMonth,
   ] = await Promise.all([
     prisma.reservation.count({
-      where: { createdAt: { gte: monthStart, lte: monthEnd } },
+      where: { createdAt: { gte: monthStart, lte: monthEnd }, status: { not: "CANCELLED" } },
     }),
     prisma.reservation.count({
-      where: { createdAt: { gte: prevMonthStart, lte: prevMonthEnd } },
+      where: { createdAt: { gte: prevMonthStart, lte: prevMonthEnd }, status: { not: "CANCELLED" } },
     }),
     prisma.reservation.aggregate({
       _sum: { totalPrice: true },
