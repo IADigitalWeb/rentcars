@@ -33,12 +33,11 @@ export function Navbar() {
       className={cn(
         "sticky top-0 w-full z-50 border-b transition-colors",
         "bg-surface/95 backdrop-blur-md border-outline-variant/20",
-        scrolled ? "shadow-sm" : "",
-        "dark:bg-inverse-surface/95 dark:border-outline/10 dark:shadow-none"
+        scrolled ? "shadow-sm" : ""
       )}
     >
       <div className="flex justify-between items-center max-w-7xl mx-auto px-margin h-20">
-        <Link href="/" className="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary dark:text-primary-fixed">
+        <Link href="/" className="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary">
           RentCars
         </Link>
 
@@ -52,8 +51,8 @@ export function Navbar() {
                 className={cn(
                   "transition-colors py-2 px-3 rounded scale-100 active:scale-95 transition-transform duration-150",
                   isActive
-                    ? "text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-1"
-                    : "text-on-surface-variant hover:text-primary dark:text-on-surface-variant/80 dark:hover:text-primary-fixed hover:bg-primary/5 dark:hover:bg-primary-fixed/10"
+                    ? "text-primary border-b-2 border-primary pb-1"
+                    : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
                 )}
               >
                 {link.label}
@@ -99,7 +98,7 @@ export function Navbar() {
       </div>
 
       {mobileOpen && (
-        <nav className="md:hidden border-t border-outline-variant/20 bg-surface dark:bg-inverse-surface px-margin py-md flex flex-col gap-sm font-label-bold text-label-bold">
+        <nav className="md:hidden border-t border-outline-variant/20 bg-surface px-margin py-md flex flex-col gap-sm font-label-bold text-label-bold">
           {navLinks.map((link) => (
             <Link
               key={link.href}

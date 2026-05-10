@@ -26,9 +26,9 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[260px] bg-surface dark:bg-inverse-surface border-r border-outline-variant/20 flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-full w-[260px] bg-surface border-r border-outline-variant/20 flex flex-col z-40">
       <div className="p-md border-b border-outline-variant/20">
-        <Link href="/admin" className="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary dark:text-primary-fixed">
+        <Link href="/admin" className="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary">
           RentCars
         </Link>
         <span className="block font-label-sm text-label-sm text-on-surface-variant mt-xs">Administration</span>
@@ -45,7 +45,7 @@ export function AdminSidebar() {
                 "flex items-center gap-sm px-md py-sm rounded font-label-bold text-label-bold transition-colors",
                 isActive
                   ? "bg-primary/10 text-primary border-l-2 border-primary"
-                  : "text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high"
+                  : "text-on-surface-variant hover:bg-surface-container"
               )}
             >
               <item.icon size={20} />

@@ -16,13 +16,13 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-surface-container-highest dark:bg-inverse-surface w-full mt-xl border-t border-outline-variant/30">
+    <footer className="bg-surface-container-highest w-full mt-xl border-t border-outline-variant/30">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-lg max-w-7xl mx-auto px-margin py-lg">
         <div className="flex flex-col gap-md">
-          <div className="font-headline-md text-headline-md font-bold text-on-surface dark:text-inverse-on-surface">
+          <div className="font-headline-md text-headline-md font-bold text-on-surface">
             RentCars
           </div>
-          <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant/70">
+          <p className="font-body-md text-body-md text-on-surface-variant">
             &copy; {new Date().getFullYear()} RentCars. L&apos;excellence automobile à votre service.
           </p>
         </div>
@@ -33,7 +33,7 @@ export function Footer() {
             <Link
               key={link.href}
               href={link.href}
-              className="font-body-md text-body-md text-on-surface-variant hover:text-primary dark:text-on-surface-variant/70 dark:hover:text-primary-fixed-dim transition-colors"
+              className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
             >
               {link.label}
             </Link>
@@ -46,7 +46,7 @@ export function Footer() {
             <Link
               key={link.href}
               href={link.href}
-              className="font-body-md text-body-md text-on-surface-variant hover:text-primary dark:text-on-surface-variant/70 dark:hover:text-primary-fixed-dim transition-colors"
+              className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
             >
               {link.label}
             </Link>
@@ -59,7 +59,7 @@ export function Footer() {
             <Link
               key={link.href}
               href={link.href}
-              className="font-body-md text-body-md text-on-surface-variant hover:text-primary dark:text-on-surface-variant/70 dark:hover:text-primary-fixed-dim transition-colors"
+              className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
             >
               {link.label}
             </Link>

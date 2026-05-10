@@ -22,7 +22,7 @@ export function ClientSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-20 h-[calc(100vh-80px)] w-[260px] bg-surface dark:bg-inverse-surface border-r border-outline-variant/20 flex flex-col z-40">
+    <aside className="fixed left-0 top-20 h-[calc(100vh-80px)] w-[260px] bg-surface border-r border-outline-variant/20 flex flex-col z-40">
       <div className="p-md border-b border-outline-variant/20">
         <div className="flex items-center gap-sm">
           <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-label-bold text-label-bold">
@@ -46,7 +46,7 @@ export function ClientSidebar() {
                 "flex items-center gap-sm px-md py-sm rounded font-label-bold text-label-bold transition-colors",
                 isActive
                   ? "bg-primary/10 text-primary border-l-2 border-primary"
-                  : "text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high"
+                  : "text-on-surface-variant hover:bg-surface-container"
               )}
             >
               <item.icon size={20} />
