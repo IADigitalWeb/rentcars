@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/use-theme";
 import { Button } from "@/components/ui/button";
-import { SignedIn, SignedOut } from "@/components/public/auth-status";
+import { SignedIn, SignedOut, useDashboardPath } from "@/components/public/auth-status";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -21,6 +21,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { dark, toggle } = useTheme();
+  const dashboardPath = useDashboardPath();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -76,7 +77,7 @@ export function Navbar() {
           </button>
 
           <SignedIn>
-            <Link href="/dashboard">
+            <Link href={dashboardPath}>
               <Button size="sm">Mon espace</Button>
             </Link>
           </SignedIn>

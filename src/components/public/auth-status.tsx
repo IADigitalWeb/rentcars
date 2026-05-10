@@ -25,3 +25,9 @@ export function SignOutButton({ className }: { className?: string }) {
     </button>
   );
 }
+
+export function useDashboardPath() {
+  const { data: session } = useSession();
+  if (!session?.user) return "/auth/connexion";
+  return session.user.role === "ADMIN" ? "/admin" : "/dashboard";
+}

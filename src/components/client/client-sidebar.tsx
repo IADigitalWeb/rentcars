@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   CalendarRange,
@@ -9,7 +10,7 @@ import {
   LogOut,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
@@ -20,16 +21,30 @@ const navItems = [
 
 export function ClientSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const userName = session?.user?.name || "Utilisateur";
+  const initials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" });
+  };
 
   return (
     <aside className="fixed left-0 top-20 h-[calc(100vh-80px)] w-[260px] bg-surface border-r border-outline-variant/20 flex flex-col z-40">
       <div className="p-md border-b border-outline-variant/20">
         <div className="flex items-center gap-sm">
           <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-label-bold text-label-bold">
-            M
+            {initials}
           </div>
           <div>
-            <span className="font-label-bold text-label-bold text-on-surface block">Marie Martin</span>
+            <span className="font-label-bold text-label-bold text-on-surface block">{userName}</span>
             <span className="font-label-sm text-label-sm text-on-surface-variant">Client</span>
           </div>
         </div>
@@ -57,7 +72,10 @@ export function ClientSidebar() {
       </nav>
 
       <div className="p-md border-t border-outline-variant/20">
-        <button className="flex items-center gap-sm px-md py-sm rounded font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container w-full transition-colors">
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-sm px-md py-sm rounded font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container w-full transition-colors"
+        >
           <LogOut size={20} />
           Déconnexion
         </button>

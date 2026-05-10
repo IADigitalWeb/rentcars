@@ -27,14 +27,14 @@ function ConnexionForm() {
       email,
       password,
       redirect: false,
-      callbackUrl,
     });
 
     if (result?.error) {
       setLoading(false);
       setAuthError(result.error === "CredentialsSignin" ? "Email ou mot de passe incorrect" : "Une erreur est survenue");
     } else {
-      router.push(callbackUrl);
+      const dest = callbackUrl !== "/" ? callbackUrl : "/dashboard";
+      router.push(dest);
       router.refresh();
     }
   };
