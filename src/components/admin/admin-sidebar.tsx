@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   Car,
@@ -9,6 +10,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +20,7 @@ const navItems = [
   { href: "/admin/vehicules", label: "Véhicules", icon: Car },
   { href: "/admin/reservations", label: "Réservations", icon: CalendarCheck },
   { href: "/admin/clients", label: "Clients", icon: Users },
+  { href: "/admin/messages", label: "Messages", icon: Mail },
   { href: "/admin/statistiques", label: "Statistiques", icon: BarChart3 },
   { href: "/admin/parametres", label: "Paramètres", icon: Settings },
 ];
@@ -56,7 +59,10 @@ export function AdminSidebar() {
       </nav>
 
       <div className="p-md border-t border-outline-variant/20">
-        <button className="flex items-center gap-sm px-md py-sm rounded font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container w-full transition-colors">
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="flex items-center gap-sm px-md py-sm rounded font-label-bold text-label-bold text-on-surface-variant hover:bg-surface-container w-full transition-colors"
+        >
           <LogOut size={20} />
           Déconnexion
         </button>
