@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getPublicUrl } from "@/lib/supabase";
 
 export async function toggleFavorite(vehicleId: string) {
   const session = await auth();
@@ -60,5 +61,6 @@ export async function getUserFavorites() {
   return favorites.map((f) => ({
     ...f.vehicle,
     pricePerDay: Number(f.vehicle.pricePerDay),
+    images: f.vehicle.images.map(getPublicUrl),
   }));
 }

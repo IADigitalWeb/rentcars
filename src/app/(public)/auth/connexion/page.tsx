@@ -27,11 +27,21 @@ function ConnexionForm() {
       email,
       password,
       redirect: false,
+    }).catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes("ACCOUNT_SUSPENDED")) {
+        return { error: "ACCOUNT_SUSPENDED" };
+      }
+      return { error: "CredentialsSignin" };
     });
 
     if (result?.error) {
       setLoading(false);
-      setAuthError(result.error === "CredentialsSignin" ? "Email ou mot de passe incorrect" : "Une erreur est survenue");
+      if (result.error === "ACCOUNT_SUSPENDED") {
+        setAuthError("Votre compte a été suspendu. Contactez le service client pour toute contestation.");
+      } else {
+        setAuthError("Email ou mot de passe incorrect");
+      }
     } else {
       const dest = callbackUrl !== "/" ? callbackUrl : "/dashboard";
       router.push(dest);

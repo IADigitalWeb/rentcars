@@ -6,15 +6,7 @@ import { auth } from "@/lib/auth";
 import { generatePaymentRef } from "@/lib/utils";
 import { checkDateConflicts } from "@/lib/server/reservation-data";
 
-const RENTAL_OPTIONS = [
-  { id: "fullInsurance", label: "Assurance tous risques", pricePerDay: 25 },
-  { id: "babySeat", label: "Siège bébé", pricePerDay: 10 },
-  { id: "gpsExtra", label: "GPS additionnel", pricePerDay: 8 },
-  { id: "extraDriver", label: "Conducteur additionnel", pricePerDay: 15 },
-  { id: "youngDriver", label: "Conducteur jeune (<25 ans)", pricePerDay: 20 },
-] as const;
-
-export { RENTAL_OPTIONS };
+import { RENTAL_OPTIONS } from "@/lib/constants";
 
 const paymentSchema = z.object({
   cardNumber: z.string().regex(/^\d{4} \d{4} \d{4} \d{4}$/, "Format invalide (XXXX XXXX XXXX XXXX)"),
@@ -53,12 +45,12 @@ export async function createReservation(formData: FormData) {
     endDate: formData.get("endDate") as string,
     pickupLocation: formData.get("pickupLocation") as string,
     returnLocation: formData.get("returnLocation") as string,
-    sameLocation: formData.get("sameLocation") as string,
-    options: formData.get("options") as string,
+    sameLocation: (formData.get("sameLocation") as string) ?? undefined,
+    options: (formData.get("options") as string) ?? undefined,
     firstName: formData.get("firstName") as string,
     lastName: formData.get("lastName") as string,
     email: formData.get("email") as string,
-    phone: formData.get("phone") as string,
+    phone: (formData.get("phone") as string) || undefined,
     acceptTerms: formData.get("acceptTerms") as string,
     payment: {
       cardNumber: formData.get("cardNumber") as string,
@@ -89,8 +81,8 @@ export async function createReservation(formData: FormData) {
     return { error: { startDate: ["La date de début ne peut pas être dans le passé"] } };
   }
 
-  if (end <= start) {
-    return { error: { endDate: ["La date de fin doit être après la date de début"] } };
+  if (end < start) {
+    return { error: { endDate: ["La date de restitution ne peut pas être antérieure au retrait"] } };
   }
 
   const vehicle = await prisma.vehicle.findUnique({
@@ -107,7 +99,7 @@ export async function createReservation(formData: FormData) {
     return { error: { startDate: ["Ce véhicule est déjà réservé aux dates sélectionnées"] } };
   }
 
-  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
   const basePrice = Number(vehicle.pricePerDay) * days;
 
   const selectedOptions: string[] = data.options ? JSON.parse(data.options) as string[] : [];

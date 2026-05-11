@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatPrice } from "@/lib/utils";
-import { RENTAL_OPTIONS, createReservation } from "@/app/actions/reservation";
+import { RENTAL_OPTIONS } from "@/lib/constants";
+import { createReservation } from "@/app/actions/reservation";
 import {
   Calendar,
   MapPin,
@@ -68,6 +69,7 @@ function ReservationFormInner({
   const [step, setStep] = useState<Step>("details");
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [confirmation, setConfirmation] = useState<ReservationResult | null>(null);
+  const today = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
     startDate: searchParams.get("startDate") || "",
@@ -142,10 +144,10 @@ function ReservationFormInner({
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      if (start < now) newErrors.startDate = ["La date ne peut pas être dans le passé"];
-      if (end <= start) newErrors.endDate = ["La date de fin doit être après le début"];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (start < today) newErrors.startDate = ["La date ne peut pas être dans le passé"];
+      if (end < start) newErrors.endDate = ["La date de restitution ne peut pas être antérieure au retrait"];
     }
     if (!formData.acceptTerms) newErrors.acceptTerms = ["Vous devez accepter les CGV"];
 
@@ -195,18 +197,26 @@ function ReservationFormInner({
     form.set("cardName", formData.cardName);
 
     startTransition(async () => {
-      const result = await createReservation(form);
-      if (result.error) {
-        if (typeof result.error === "string") {
-          setErrors({ form: [result.error] });
-        } else {
-          setErrors(result.error);
+      try {
+        const result = await createReservation(form);
+        if (result.error) {
+          if (typeof result.error === "string") {
+            setErrors({ form: [result.error] });
+          } else {
+            const allErrors: Record<string, string[]> = {};
+            for (const [key, val] of Object.entries(result.error)) {
+              allErrors[key.includes(".") ? "form" : key] = val as string[];
+            }
+            setErrors(allErrors);
+          }
+          return;
         }
-        return;
-      }
-      if (result.success && result.reservation) {
-        setConfirmation(result.reservation);
-        setStep("confirmation");
+        if (result.success && result.reservation) {
+          setConfirmation(result.reservation);
+          setStep("confirmation");
+        }
+      } catch {
+        setErrors({ form: ["Une erreur inattendue est survenue. Veuillez réessayer."] });
       }
     });
   };
@@ -307,6 +317,7 @@ function ReservationFormInner({
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => setField("startDate", e.target.value)}
+                    min={today}
                     error={errors.startDate?.[0]}
                     required
                   />
@@ -315,6 +326,7 @@ function ReservationFormInner({
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => setField("endDate", e.target.value)}
+                    min={formData.startDate || today}
                     error={errors.endDate?.[0]}
                     required
                   />

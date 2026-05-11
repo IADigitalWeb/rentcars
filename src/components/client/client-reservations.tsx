@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { cn, formatPrice, formatDate, RESERVATION_STATUS_COLORS } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { useState } from "react";
+import { cancelReservation } from "@/app/actions/reservation-status";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -25,7 +27,18 @@ interface Reservation {
 }
 
 export function ClientReservations({ reservations }: { reservations: Reservation[] }) {
+  const router = useRouter();
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const handleCancel = () => {
+    if (!cancelTarget) return;
+    startTransition(async () => {
+      await cancelReservation(cancelTarget);
+      setCancelTarget(null);
+      router.refresh();
+    });
+  };
 
   return (
     <div className="flex flex-col gap-lg">
@@ -71,7 +84,7 @@ export function ClientReservations({ reservations }: { reservations: Reservation
               </div>
               {(r.status === "PENDING" || r.status === "CONFIRMED") && (
                 <div className="mt-sm pt-sm border-t border-outline-variant/10 flex justify-end">
-                  <Button variant="danger" size="sm" onClick={() => setCancelTarget(r.id)}>
+                  <Button variant="danger" size="sm" disabled={isPending} onClick={() => setCancelTarget(r.id)}>
                     Annuler
                   </Button>
                 </div>
@@ -91,7 +104,7 @@ export function ClientReservations({ reservations }: { reservations: Reservation
         </p>
         <div className="flex gap-sm justify-end">
           <Button variant="ghost" onClick={() => setCancelTarget(null)}>Non, garder</Button>
-          <Button variant="danger" onClick={() => setCancelTarget(null)}>Oui, annuler</Button>
+          <Button variant="danger" disabled={isPending} onClick={handleCancel}>Oui, annuler</Button>
         </div>
       </Modal>
     </div>

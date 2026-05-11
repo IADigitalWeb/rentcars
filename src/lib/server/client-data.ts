@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getPublicUrl } from "@/lib/supabase";
 
 export async function getClientDashboard() {
   const session = await auth();
@@ -11,7 +12,10 @@ export async function getClientDashboard() {
   });
   if (!user) return null;
 
-  const [activeReservations, totalReservations, favoritesCount, nextReservation] =
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [activeReservations, totalReservations, favoritesCount, nextReservation, recentFavorites] =
     await Promise.all([
       prisma.reservation.count({
         where: {
@@ -28,17 +32,36 @@ export async function getClientDashboard() {
       prisma.reservation.findFirst({
         where: {
           userId: session.user.id,
-          status: { in: ["PENDING", "CONFIRMED"] },
-          startDate: { gte: new Date() },
+          status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
+          startDate: { gte: todayStart },
         },
         orderBy: { startDate: "asc" },
         select: {
           id: true,
+          status: true,
           startDate: true,
           endDate: true,
           totalPrice: true,
           vehicle: { select: { brand: true, model: true, images: true } },
         },
+      }),
+      prisma.favorite.findMany({
+        where: { userId: session.user.id },
+        select: {
+          vehicle: {
+            select: {
+              id: true,
+              brand: true,
+              model: true,
+              year: true,
+              category: true,
+              pricePerDay: true,
+              images: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 4,
       }),
     ]);
 
@@ -53,8 +76,17 @@ export async function getClientDashboard() {
           totalPrice: Number(nextReservation.totalPrice),
           startDate: nextReservation.startDate.toISOString(),
           endDate: nextReservation.endDate.toISOString(),
+          vehicle: {
+            ...nextReservation.vehicle,
+            images: nextReservation.vehicle.images.map(getPublicUrl),
+          },
         }
       : null,
+    recentFavorites: recentFavorites.map((f) => ({
+      ...f.vehicle,
+      pricePerDay: Number(f.vehicle.pricePerDay),
+      images: f.vehicle.images.map(getPublicUrl),
+    })),
   };
 }
 
@@ -80,6 +112,10 @@ export async function getClientReservations() {
       totalPrice: Number(r.totalPrice),
       startDate: r.startDate.toISOString(),
       endDate: r.endDate.toISOString(),
+      vehicle: {
+        ...r.vehicle,
+        images: r.vehicle.images.map(getPublicUrl),
+      },
     }))
   );
 }

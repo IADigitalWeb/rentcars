@@ -2,7 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
   open: boolean;
@@ -14,6 +15,8 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, children, footer, className }: ModalProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -25,34 +28,49 @@ export function Modal({ open, onClose, title, children, footer, className }: Mod
     };
   }, [open]);
 
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) onClose();
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [open, onClose]);
+
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-inverse-surface/50 backdrop-blur-sm" onClick={onClose} />
+  return createPortal(
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
+    >
       <div
+        style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+        onClick={onClose}
+      />
+      <div
+        ref={panelRef}
         className={cn(
-          "relative bg-surface rounded-xl shadow-[0_12px_32px_rgba(35,35,35,0.08)]",
-          "w-full max-w-lg mx-md animate-in fade-in",
+          "relative bg-white rounded-xl shadow-2xl",
+          "w-full max-w-[600px] mx-4",
           className
         )}
       >
-        <div className="flex items-center justify-between p-md border-b border-outline-variant/20">
-          <h2 className="font-headline-md text-headline-md text-on-surface">{title}</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
-            className="p-xs rounded hover:bg-surface-container transition-colors text-on-surface-variant"
+            className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500"
           >
             <X size={20} />
           </button>
         </div>
-        <div className="p-md">{children}</div>
+        <div className="p-4">{children}</div>
         {footer && (
-          <div className="p-md border-t border-outline-variant/20 flex justify-end gap-sm">
+          <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
             {footer}
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

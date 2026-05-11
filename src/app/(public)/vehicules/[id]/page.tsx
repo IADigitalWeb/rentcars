@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { VehicleDetail } from "@/components/public/vehicle-detail";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPublicUrl } from "@/lib/supabase";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -41,6 +42,7 @@ export default async function VehiculePage({ params }: { params: Promise<{ id: s
     topSpeed: vehicle.topSpeed,
     consumption: vehicle.consumption ? Number(vehicle.consumption) : null,
     trunkVolume: vehicle.trunkVolume,
+    images: vehicle.images.map(getPublicUrl),
     reviews: vehicle.reviews.map((r) => ({
       ...r,
       createdAt: r.createdAt.toISOString(),

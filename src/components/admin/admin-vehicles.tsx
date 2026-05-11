@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteVehicle } from "@/app/actions/vehicle";
 import { VehicleDrawer } from "./vehicle-drawer";
+import { getPublicUrl } from "@/lib/supabase";
 
 interface Vehicle {
   id: string;
@@ -154,7 +155,7 @@ export function AdminVehicles({
                     <div className="flex items-center gap-sm">
                       <div className="w-12 h-10 rounded bg-surface-container overflow-hidden shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={v.images[0] || "/placeholder-car.jpg"} alt="" className="w-full h-full object-cover" />
+                        <img src={v.images[0] ? getPublicUrl(v.images[0]) : "/placeholder-car.jpg"} alt="" className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <span className="font-label-bold text-label-bold text-on-surface block">{v.brand} {v.model}</span>

@@ -78,10 +78,56 @@ export function VehicleDrawer({ open, onClose, vehicle }: DrawerProps) {
     setEquipments(equipments.filter((_, i) => i !== index));
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+  async function compressToWebP(file: File): Promise<File> {
+    if (file.size <= MAX_FILE_SIZE && file.type === "image/webp") return file;
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_DIM = 1920;
+        let { width, height } = img;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { resolve(file); return; }
+            const webpFile = new File([blob], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
+            resolve(webpFile);
+          },
+          "image/webp",
+          0.8
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    const previews = files.map((f) => ({ file: f, url: URL.createObjectURL(f) }));
-    setPreviewFiles((prev) => [...prev, ...previews]);
+    const oversized = files.find((f) => f.size > MAX_FILE_SIZE * 2);
+    if (oversized) {
+      setError(`L'image "${oversized.name}" depasse 10 Mo et ne peut pas etre compressee.`);
+      return;
+    }
+    setError(null);
+
+    const compressed: { file: File; url: string }[] = [];
+    for (const f of files) {
+      const webp = await compressToWebP(f);
+      compressed.push({ file: webp, url: URL.createObjectURL(webp) });
+    }
+    setPreviewFiles((prev) => [...prev, ...compressed]);
   }
 
   function removePreview(index: number) {

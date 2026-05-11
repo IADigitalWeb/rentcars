@@ -40,7 +40,5 @@ export async function deleteImage(path: string): Promise<void> {
 }
 
 export function getPublicUrl(path: string): string {
-  const client = createClient();
-  const { data } = client.storage.from(supabaseBucket).getPublicUrl(path);
-  return data.publicUrl;
+  return `${supabaseUrl}/storage/v1/object/public/${supabaseBucket}/${path}`;
 }

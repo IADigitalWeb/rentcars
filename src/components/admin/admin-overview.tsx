@@ -1,6 +1,14 @@
 "use client";
 
 import { cn, formatPrice, RESERVATION_STATUS_COLORS, CATEGORY_LABELS, FUEL_LABELS } from "@/lib/utils";
+
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: "En attente",
+  CONFIRMED: "Confirmée",
+  IN_PROGRESS: "En cours",
+  COMPLETED: "Terminée",
+  CANCELLED: "Annulée",
+};
 import {
   CalendarCheck,
   Euro,
@@ -190,7 +198,7 @@ export function AdminOverview({
                     </td>
                     <td className="py-sm">
                       <span className={cn("px-sm py-xs rounded font-label-sm text-label-sm", RESERVATION_STATUS_COLORS[r.status] || "")}>
-                        {r.status}
+                        {STATUS_LABELS[r.status] || r.status}
                       </span>
                     </td>
                     <td className="py-sm font-label-bold text-label-bold text-on-surface text-right">{formatPrice(r.totalPrice)}</td>

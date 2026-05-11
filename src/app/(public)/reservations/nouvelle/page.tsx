@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getVehicleForReservation, getUserProfile } from "@/lib/server/reservation-data";
 import { ReservationPage } from "@/components/public/reservation-page";
+import { getPublicUrl } from "@/lib/supabase";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default async function NewReservationPage({
   const serializedVehicle = {
     ...vehicle,
     pricePerDay: Number(vehicle.pricePerDay),
+    images: vehicle.images.map(getPublicUrl),
   };
 
   return <ReservationPage vehicle={serializedVehicle} user={user} />;

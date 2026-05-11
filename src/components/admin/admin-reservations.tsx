@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { cn, formatPrice, RESERVATION_STATUS_COLORS } from "@/lib/utils";
-import { Search } from "lucide-react";
+import { Search, CheckCircle, Play, Square, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { updateReservationStatus } from "@/app/actions/reservation-status";
+import { ReservationStatus } from "@/generated/prisma/enums";
+import { useRouter } from "next/navigation";
 
 interface Reservation {
   id: string;
@@ -24,15 +28,40 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Annulée",
 };
 
+const NEXT_ACTIONS: Record<string, { status: ReservationStatus; label: string; icon: typeof CheckCircle; variant: "primary" | "ghost" | "danger" }[]> = {
+  PENDING: [
+    { status: "CONFIRMED" as ReservationStatus, label: "Confirmer", icon: CheckCircle, variant: "primary" },
+    { status: "CANCELLED" as ReservationStatus, label: "Refuser", icon: XCircle, variant: "danger" },
+  ],
+  CONFIRMED: [
+    { status: "IN_PROGRESS" as ReservationStatus, label: "Démarrer", icon: Play, variant: "primary" },
+    { status: "CANCELLED" as ReservationStatus, label: "Annuler", icon: XCircle, variant: "danger" },
+  ],
+  IN_PROGRESS: [
+    { status: "COMPLETED" as ReservationStatus, label: "Terminer", icon: Square, variant: "primary" },
+  ],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
 export function AdminReservations({ reservations }: { reservations: Reservation[] }) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [isPending, startTransition] = useTransition();
 
   const filtered = reservations.filter((r) => {
     const matchSearch = !search || `${r.user.firstName} ${r.user.lastName} ${r.user.email}`.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "ALL" || r.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const handleStatusChange = (reservationId: string, newStatus: ReservationStatus) => {
+    startTransition(async () => {
+      await updateReservationStatus(reservationId, newStatus);
+      router.refresh();
+    });
+  };
 
   return (
     <div className="flex flex-col gap-lg">
@@ -75,30 +104,51 @@ export function AdminReservations({ reservations }: { reservations: Reservation[
                 <th className="text-left px-md py-sm font-label-sm text-label-sm text-on-surface-variant">Dates</th>
                 <th className="text-left px-md py-sm font-label-sm text-label-sm text-on-surface-variant">Statut</th>
                 <th className="text-right px-md py-sm font-label-sm text-label-sm text-on-surface-variant">Montant</th>
+                <th className="text-right px-md py-sm font-label-sm text-label-sm text-on-surface-variant">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((r) => (
-                <tr key={r.id} className="border-t border-outline-variant/10 hover:bg-surface-container-low/50">
-                  <td className="px-md py-sm">
-                    <span className="font-label-bold text-label-bold text-on-surface block">{r.user.firstName} {r.user.lastName}</span>
-                    <span className="font-label-sm text-label-sm text-on-surface-variant">{r.user.email}</span>
-                  </td>
-                  <td className="px-md py-sm font-body-md text-body-md text-on-surface">{r.vehicle.brand} {r.vehicle.model}</td>
-                  <td className="px-md py-sm font-body-md text-body-md text-on-surface-variant">
-                    {new Date(r.startDate).toLocaleDateString("fr-FR")} → {new Date(r.endDate).toLocaleDateString("fr-FR")}
-                  </td>
-                  <td className="px-md py-sm">
-                    <span className={cn("px-sm py-xs rounded font-label-sm text-label-sm", RESERVATION_STATUS_COLORS[r.status] || "")}>
-                      {STATUS_LABELS[r.status] || r.status}
-                    </span>
-                  </td>
-                  <td className="px-md py-sm font-label-bold text-label-bold text-on-surface text-right">{formatPrice(r.totalPrice)}</td>
-                </tr>
-              ))}
+              {filtered.map((r) => {
+                const actions = NEXT_ACTIONS[r.status] || [];
+                return (
+                  <tr key={r.id} className="border-t border-outline-variant/10 hover:bg-surface-container-low/50">
+                    <td className="px-md py-sm">
+                      <span className="font-label-bold text-label-bold text-on-surface block">{r.user.firstName} {r.user.lastName}</span>
+                      <span className="font-label-sm text-label-sm text-on-surface-variant">{r.user.email}</span>
+                    </td>
+                    <td className="px-md py-sm font-body-md text-body-md text-on-surface">{r.vehicle.brand} {r.vehicle.model}</td>
+                    <td className="px-md py-sm font-body-md text-body-md text-on-surface-variant">
+                      {new Date(r.startDate).toLocaleDateString("fr-FR")} → {new Date(r.endDate).toLocaleDateString("fr-FR")}
+                    </td>
+                    <td className="px-md py-sm">
+                      <span className={cn("px-sm py-xs rounded font-label-sm text-label-sm", RESERVATION_STATUS_COLORS[r.status] || "")}>
+                        {STATUS_LABELS[r.status] || r.status}
+                      </span>
+                    </td>
+                    <td className="px-md py-sm font-label-bold text-label-bold text-on-surface text-right">{formatPrice(r.totalPrice)}</td>
+                    <td className="px-md py-sm text-right">
+                      <div className="flex items-center justify-end gap-xs">
+                        {actions.map((action) => (
+                          <Button
+                            key={action.status}
+                            variant={action.variant}
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => handleStatusChange(r.id, action.status)}
+                            className="gap-xs"
+                          >
+                            <action.icon size={14} />
+                            {action.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-md py-lg text-center font-body-md text-body-md text-on-surface-variant">
+                  <td colSpan={6} className="px-md py-lg text-center font-body-md text-body-md text-on-surface-variant">
                     Aucune réservation trouvée
                   </td>
                 </tr>
