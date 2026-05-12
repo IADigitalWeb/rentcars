@@ -9,10 +9,17 @@ import { useTheme } from "@/lib/use-theme";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, useDashboardPath } from "@/components/public/auth-status";
 
-const navLinks = [
+const publicNavLinks = [
   { href: "/", label: "Accueil" },
   { href: "/inventaire", label: "Inventaire" },
-  { href: "/reservations/nouvelle", label: "Réservation" },
+  { href: "/inventaire", label: "Réservation" },
+  { href: "/informations/contact", label: "Contact" },
+];
+
+const authNavLinks = [
+  { href: "/", label: "Accueil" },
+  { href: "/inventaire", label: "Inventaire" },
+  { href: "/dashboard/reservations", label: "Réservation" },
   { href: "/informations/contact", label: "Contact" },
 ];
 
@@ -42,25 +49,49 @@ export function Navbar() {
           RentCars
         </Link>
 
-        <nav className="hidden md:flex items-center gap-margin font-label-bold text-label-bold">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "transition-colors py-2 px-3 rounded scale-100 active:scale-95 transition-transform duration-150",
-                  isActive
-                    ? "text-primary border-b-2 border-primary pb-1"
-                    : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
-                )}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <SignedIn>
+          <nav className="hidden md:flex items-center gap-margin font-label-bold text-label-bold">
+            {authNavLinks.map((link) => {
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "transition-colors py-2 px-3 rounded scale-100 active:scale-95 transition-transform duration-150",
+                    isActive
+                      ? "text-primary border-b-2 border-primary pb-1"
+                      : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </SignedIn>
+
+        <SignedOut>
+          <nav className="hidden md:flex items-center gap-margin font-label-bold text-label-bold">
+            {publicNavLinks.map((link) => {
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "transition-colors py-2 px-3 rounded scale-100 active:scale-95 transition-transform duration-150",
+                    isActive
+                      ? "text-primary border-b-2 border-primary pb-1"
+                      : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </SignedOut>
 
         <div className="flex items-center gap-md">
           <div className="hidden lg:flex items-center gap-sm text-on-surface-variant">
@@ -99,18 +130,37 @@ export function Navbar() {
       </div>
 
       {mobileOpen && (
-        <nav className="md:hidden border-t border-outline-variant/20 bg-surface px-margin py-md flex flex-col gap-sm font-label-bold text-label-bold">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="py-sm px-sm rounded text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <>
+          <SignedIn>
+            <nav className="md:hidden border-t border-outline-variant/20 bg-surface px-margin py-md flex flex-col gap-sm font-label-bold text-label-bold">
+              {authNavLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="py-sm px-sm rounded text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </SignedIn>
+
+          <SignedOut>
+            <nav className="md:hidden border-t border-outline-variant/20 bg-surface px-margin py-md flex flex-col gap-sm font-label-bold text-label-bold">
+              {publicNavLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="py-sm px-sm rounded text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </SignedOut>
+        </>
       )}
     </header>
   );
